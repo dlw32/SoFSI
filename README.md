@@ -6,7 +6,6 @@ This repository is for storage and documentation of scripts relating to the lab,
 
 ## Contents
 `/Pulsar_MATLAB_tools` Contains the following MATLAB functions for working with Pulsar:
-```
-sefread.m
-sef2mat.m
-```
+
+- `sefread.m` converts a `*.sef` file and output MATLAB variables into the workspace
+- `sef2mat.m` will batch process `*.sef` files using `sefread.m` and return structured arrays in a `*.mat` file
