@@ -1,8 +1,7 @@
-function sef2mat
 %%  SEF2MAT Converts Servotest.sef files to .mat.
-%{
-Allows for selection of multiple files for batch conversion.
-%}
+% Allows for selection of multiple files for batch conversion.
+
+function sef2mat
         
 %% Select files for conversion
 [FNin,PN,~] = uigetfile({'*.sef','Files to covert (*.sef)'},'Select .sef files for conversion','MultiSelect','on');
@@ -62,9 +61,3 @@ for r = 1:length(FNin)
 
 end
 end
-
-%% Subfunctions
-% function sefread(filename)
-% 
-% 
-% end

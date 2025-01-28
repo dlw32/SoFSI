@@ -1,7 +1,8 @@
-function [loggingrate, names, units, comments, matrix, ScaleArry, read_error] = sefread(filename)
 %% SEFREAD reads Servotest .sef files into MATLAB with debug messages
-try % For error handling
 
+function [loggingrate, names, units, comments, matrix, ScaleArry, read_error] = sefread(filename)
+
+try % For error handling
     read_error = 1;     % Default to 1
     loggingrate = [];   % Sample rate
     names = {};         % Channel names
@@ -93,7 +94,6 @@ catch ME % Display error message in case of failure
     fprintf('Error reading SEF file: %s\n', ME.message);
 end
 end
-
 %% Subfunctions with debug messages
 function value = GetParameter(fid, offset, type)
     current = ftell(fid);
@@ -102,7 +102,6 @@ function value = GetParameter(fid, offset, type)
     disp(['GetParameter(', type, ') at offset ', num2str(offset), ': ', num2str(value)]);
     fseek(fid, current, 'bof');
 end
-
 function value = GetParameterStr(fid, offset)
     current = ftell(fid);
     fseek(fid, offset, 'bof');
