@@ -1,4 +1,4 @@
-%% SEFWRITE SEFWRITE Converts data into Servotest *.sef format
+%% SEFWRITE Converts data into Servotest *.sef format
 function sefwrite(filename, loggingrate, names, scales, units, matrix, comments)
 
 % Get rid of char(32) at the end of each name
