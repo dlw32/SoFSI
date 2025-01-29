@@ -132,6 +132,6 @@ function convert2sef(varargin)
         filename = fullfile([FNnoext '_target.sef']);
         
         % Write file
-        WriteFile(filename, loggingrate, names, scales, units, matrix, comments);
+        sefwrite(filename, loggingrate, names, scales, units, matrix, comments);
     end
 end
