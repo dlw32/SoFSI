@@ -1,180 +1,215 @@
-%% SEFWRITE Converts data into Servotest *.sef format
-
-%   Inputs:
-%   filename    - Output filename (string)
-%   loggingrate - Sampling rate (float)
-%   names       - Channel names (char array)
-%   scales      - Scale factors (array)
-%   units       - Units for each channel (char array)
-%   matrix      - Data matrix (samples x channels)
-%   comments    - File description (string)
-
+%% SEFWRITE SEFWRITE Converts data into Servotest *.sef format
 function sefwrite(filename, loggingrate, names, scales, units, matrix, comments)
 
-% Input validation
-if nargin < 7
-    comments = '';
+% Get rid of char(32) at the end of each name
+names_width=min([20 size(names,2)]);
+units_width=min([10 size(units,2)]);
+names=names(:,1:names_width);
+units=units(:,1:units_width);
+
+names=nospace(names,names_width);
+units=nospace(units,units_width);
+
+disp(['Writing: ', filename]);
+disp('...');
+
+%open the file
+fid=fopen(filename,'w');
+
+% Write the header file
+str='Servotest Extensible Format';
+[~, length] = size(str);
+
+for i=1:length
+   %output two character for wide character format
+   count =fwrite(fid,str(i),'char');
+   count =fwrite(fid,0,'char');
+end
+%for some reason the ID has an extra blank
+fwrite(fid,0,'char');
+fwrite(fid,0,'char');
+
+%   Write the header information:
+%       SampleRate
+%       NumberOfSamples
+%       NumberOfChannels
+%       Description
+%       DataPointer
+
+% Description
+[~,DescriptionSize]=size(comments);
+if DescriptionSize > 0
+    NumberOfEntries = 5;
+else
+   NumberOfEntries = 4;
 end
 
-% Get rid of trailing spaces in names and units
-names_width = min(20, size(names, 2));
-units_width = min(10, size(units, 2));
-names = names(:, 1:names_width);
-units = units(:, 1:units_width);
+header=zeros(1,4);
+thispos = ftell(fid) + (16*NumberOfEntries) + 4; % allow for list terminator
+i=1;
 
-names = nospace(names, names_width);
-units = nospace(units, units_width);
-
-% Open file for writing
-fid = fopen(filename, 'w');
-if fid == -1
-    error('Failed to open file for writing: %s', filename);
-end
-
-cleanup = onCleanup(@() fclose(fid)); % Ensure file gets closed
-
-% Write file identifier
-writeFileIdentifier(fid);
-
-% Get matrix dimensions
 [samples, channels] = size(matrix);
 
-% Write header section
-descriptionSize = length(comments);
-numEntries = 4 + (descriptionSize > 0);
-headerInfo = createHeaderInfo(fid, numEntries, samples, channels, descriptionSize);
+% Samples
+header(i,1)=101;
+header(i,2)=thispos;
+header(i,4)=header(i,1)+header(i,2);
+thispos = thispos+8; % 64 bit integer
+i=i+1;
 
-% Write main header
-fwrite(fid, flipud(rot90(headerInfo)), 'long');
-fwrite(fid, 0, 'long'); % List terminator
+% Sample rate
+header(i,1)=102;
+header(i,2)=thispos;
+header(i,4)=header(i,1)+header(i,2);
+thispos = thispos+4; % 32 bit floating point
+i=i+1;
 
-% Write core data
-fwrite(fid, samples, 'int64');
+if DescriptionSize > 0
+   header(i,1)=1;
+   header(i,2)=thispos;
+   header(i,4)=header(i,1)+header(i,2);
+   % Add a long string length and allow for wide characters
+   thispos = thispos + (4 + (DescriptionSize * 2));
+   i=i+1;
+end
+
+% Channels
+header(i,1)=4;
+header(i,2)=thispos;
+header(i,4)=header(i,1)+header(i,2);
+thispos = thispos+16+(16 * channels); % integer followed by list of channel pointers
+i=i+1;
+
+% Data
+% we need to remeber where we are so that we can write the correct offset
+datahoffset = (i-1)*16 + 56;
+header(i,1)=103;
+header(i,2)=0;
+header(i,4)=header(i,1)+header(i,2);
+
+% Flip and rotate header to get the right order
+% Write the header
+fwrite(fid, flipud(rot90(header)), 'long');
+
+% List terminator
+fwrite(fid,0,'long');
+
+% Number of samples
+[samples,channels] = size(matrix);
+fwrite(fid, samples,'int64');
+%sample rate
 fwrite(fid, loggingrate, 'float32');
 
-if descriptionSize > 0
-    writestring(fid, comments);
+% Ddescription (if required)
+if DescriptionSize > 0
+   writestring(fid,comments);
 end
 
-% Write channel information
+% Channels
 fwrite(fid, channels, 'int');
 
-% Write channel pointers
-writeChannelPointers(fid, channels);
-
-% Write channel details
-channeloffset = writeChannelDetails(fid, channels, names, units, scales);
-
-% Write actual data
-datastart = ftell(fid);
-updateHeaderPosition(fid, datastart);
-
-% Scale and write data matrix
-matrix = matrix ./ scales'; % Vectorized scaling
-fwrite(fid, matrix', 'float');
-
-fprintf('Successfully wrote data to: %s\n', filename);
+% Pointer list to channel information
+pos=ftell(fid)+(channels * 8);
+for i=1:channels
+   fwrite(fid,pos+((i-1)* 52),'int64');
 end
 
-function writeFileIdentifier(fid)
-    str = 'Servotest Extensible Format';
-    for c = str
-        fwrite(fid, [c 0], 'char');
-    end
-    fwrite(fid, [0 0], 'char'); % Extra blanks needed by format
+% Channel pointer
+channeloffset = ftell(fid) + (((16 * 3)+4) * channels); %add list terminator
+channellist=zeros(1,4);
+c = 1;
+for j=1:channels
+   % Channel name
+   channellist(c,1)=500;
+   channellist(c,2)=channeloffset;
+   channellist(c,4)=channellist(c,1)+channellist(c,2);
+   [~,channelnamelen] = size(names);
+   channeloffset = channeloffset+(4+ (channelnamelen *2));
+   c=c+1;
+
+   % Channel units
+   channellist(c,1)=501;
+   channellist(c,2)=channeloffset;
+   channellist(c,4)=channellist(c,1)+channellist(c,2);
+   [~,channelunitslen] = size(units);
+   channeloffset = channeloffset+(4+ (channelunitslen *2));
+   c=c+1;
+
+   % Channel scales
+   channellist(c,1)=502;
+   channellist(c,2)=channeloffset;
+   channellist(c,4)=channellist(c,1)+channellist(c,2);
+   channeloffset = channeloffset + 4;
+
+   % Write channel headers
+   fwrite(fid,flipud(rot90(channellist)),'long');
+   fwrite(fid,0,'long');
+   c=1;
+   channellist=zeros(1,4);
 end
 
-function headerInfo = createHeaderInfo(fid, numEntries, samples, channels, descriptionSize)
-    headerInfo = zeros(1, 4);
-    thispos = ftell(fid) + (16 * numEntries) + 4;
-    
-    % Samples entry
-    headerInfo(1, :) = [101, thispos, 0, 101 + thispos];
-    thispos = thispos + 8;
-    
-    % Sample rate entry
-    headerInfo(2, :) = [102, thispos, 0, 102 + thispos];
-    thispos = thispos + 4;
-    
-    % Description entry (if present)
-    i = 3;
-    if descriptionSize > 0
-        headerInfo(i, :) = [1, thispos, 0, 1 + thispos];
-        thispos = thispos + (4 + (descriptionSize * 2));
-        i = i + 1;
-    end
-    
-    % Channels entry
-    headerInfo(i, :) = [4, thispos, 0, 4 + thispos];
-    thispos = thispos + 16 + (16 * channels);
-    
-    % Data entry
-    headerInfo(i+1, :) = [103, 0, 0, 103];
+for j=1:channels
+   writestring(fid,names(j,:));
+   writestring(fid,units(j,:));
+   fwrite(fid,scales(j),'float');
 end
 
-function writeChannelPointers(fid, channels)
-    pos = ftell(fid) + (channels * 8);
-    channelPositions = pos + ((0:channels-1) * 52);
-    fwrite(fid, channelPositions, 'int64');
+% Data
+datastart=ftell(fid);
+
+% Go back and write the header position
+fseek(fid,datahoffset,'bof');
+fwrite(fid,103,'long');
+fwrite(fid,datastart,'long');
+fwrite(fid,0,'long');
+fwrite(fid,datastart+103,'long');
+
+% Go to data point
+fseek(fid,datastart,'bof');
+
+% Write the data
+% De-scale the data
+for i = 1:channels
+   matrix(:,i) = matrix(:,i) / scales(i) ;
 end
 
-function channeloffset = writeChannelDetails(fid, channels, names, units, scales)
-    channeloffset = ftell(fid) + (((16 * 3) + 4) * channels);
-    [~, namelen] = size(names);
-    [~, unitslen] = size(units);
-    
-    for j = 1:channels
-        % Create and write channel list
-        channellist = [
-            500, channeloffset, 0, 500 + channeloffset;
-            501, channeloffset + (4 + namelen * 2), 0, 501 + channeloffset + (4 + namelen * 2);
-            502, channeloffset + (4 + namelen * 2) + (4 + unitslen * 2), 0, 502 + channeloffset + (4 + namelen * 2) + (4 + unitslen * 2)
-        ];
-        
-        fwrite(fid, flipud(rot90(channellist)), 'long');
-        fwrite(fid, 0, 'long');
-        
-        channeloffset = channeloffset + (4 + namelen * 2) + (4 + unitslen * 2) + 4;
-    end
-    
-    % Write channel data
-    for j = 1:channels
-        writestring(fid, names(j,:));
-        writestring(fid, units(j,:));
-        fwrite(fid, scales(j), 'float');
-    end
-end
+% Save the whole matrix in one go
+fwrite(fid,matrix','float');
 
-function updateHeaderPosition(fid, datastart)
-    datahoffset = 56;
-    fseek(fid, datahoffset, 'bof');
-    fwrite(fid, [103, datastart, 0, datastart + 103], 'long');
-    fseek(fid, datastart, 'bof');
-end
+fclose(fid);
 
-function writestring(fid, str)
-    [~, len] = size(str);
-    fwrite(fid, len, 'int32');
-    for i = 1:len
-        fwrite(fid, [str(i) 0], 'char');
+disp('Done');
+disp('');
+
+end
+%% Subfunctions
+
+% WRITESTRING outputs a string in wide character format and specifies length at the start
+function writestring(fid,str)
+[~, length] = size(str);
+% Output twice the length (wide character format)
+count = fwrite(fid,length,'int32');
+    for i=1:length
+       % Output two character for wide character format
+       count =fwrite(fid,str(i),'char');
+       count =fwrite(fid,0,'char');
     end
 end
 
-function newnames = nospace(names, lim)
-    dnames = double(names);
-    [nchans, nchars] = size(dnames);
-    dzeros = zeros(nchans, lim);
-    
-    for i = 1:nchans
-        for j = nchars:-1:1
-            if dnames(i,j) == 32
-                dnames(i,j) = 0;
+% NEWNAMES gets rid of char(32) at the end of each name
+function newnames=nospace(names,lim)
+dnames=double(names);
+[nchans,nchars]=size(dnames);
+dzeros=zeros(nchans,lim);
+    for i=1:nchans
+        for j=nchars:-1:1
+            if dnames(i,j)==32
+                dnames(i,j)=0;
             else
-                break
+                break;
             end
         end
     end
-    
-    dzeros(:, 1:min(nchars, lim)) = dnames;
-    newnames = char(dzeros);
+dzeros(:,1:min(nchars,lim))=dnames;
+newnames=char(dzeros);
 end
