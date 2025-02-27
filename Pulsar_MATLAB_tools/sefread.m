@@ -1,4 +1,5 @@
-%% SEFREAD reads Servotest .sef files into MATLAB with debug messages
+%% SEFREAD reads Servotest .sef files into MATLAB 
+% Debug messages commented out
 
 function [loggingrate, names, units, comments, matrix, ScaleArry, read_error] = sefread(filename)
 
@@ -18,13 +19,14 @@ try % For error handling
     
     fseek(fid_veh, 56, 'bof');
     disp(['Reading SEF File: ', filename]);
+    disp('...')
     
     while (~feof(fid_veh))
         datablock = fread(fid_veh, 4, 'long');
         if isempty(datablock) || feof(fid_veh)
             break;
         end
-        disp(['Datablock: ', num2str(datablock')]);
+        % disp(['Datablock: ', num2str(datablock')]);
         
         switch datablock(1)
             case 0
@@ -32,19 +34,19 @@ try % For error handling
             case 1
                 % Comments
                 comments = char(GetParameterStr(fid_veh, datablock(2)));
-                disp(['Comments: ', comments]);
+                % disp(['Comments: ', comments]);
             case 102
                 % Sample rate
                 loggingrate = GetParameter(fid_veh, datablock(2), 'float32');
-                disp(['Logging rate: ', num2str(loggingrate)]);
+                % disp(['Logging rate: ', num2str(loggingrate)]);
             case 101
                 % No. of samples
                 samples = GetParameter(fid_veh, datablock(2), 'int64');
-                disp(['Number of samples: ', num2str(samples)]);
+                % disp(['Number of samples: ', num2str(samples)]);
             case 4
                 % No. of channels
                 channels = GetParameter(fid_veh, datablock(2), 'int');
-                disp(['Number of channels: ', num2str(channels)]);
+                % disp(['Number of channels: ', num2str(channels)]);
                 if isempty(channels) || channels <= 0
                     error('Invalid number of channels detected.');
                 end
@@ -66,10 +68,10 @@ try % For error handling
                                 break;
                             case 500
                                 names{i} = char(GetParameterStr(fid_veh, Chandatablock(2)));
-                                disp(['Channel ', num2str(i), ' Name: ', names{i}]);
+                                % disp(['Channel ', num2str(i), ' Name: ', names{i}]);
                             case 501
                                 units{i} = char(GetParameterStr(fid_veh, Chandatablock(2)));
-                                disp(['Channel ', num2str(i), ' Unit: ', units{i}]);
+                                % disp(['Channel ', num2str(i), ' Unit: ', units{i}]);
                         end
                     end
                     channelptr = channelptr + 8;
@@ -79,13 +81,14 @@ try % For error handling
                 if exist('channels', 'var') && exist('samples', 'var')
                     fseek(fid_veh, datablock(2), 'bof');
                     matrix = fread(fid_veh, [channels samples], 'float')';
-                    disp('Matrix data read successfully.');
+                    disp('Data read successfully.');
+                    disp('...');
                     read_error = 0;
                 else
                     error('Channels or samples not defined before reading matrix.');
                 end
             otherwise
-                disp(['Unknown datablock type: ', num2str(datablock(1))]);
+                % disp(['Unknown datablock type: ', num2str(datablock(1))]);
         end
     end
     
@@ -94,12 +97,12 @@ catch ME % Display error message in case of failure
     fprintf('Error reading SEF file: %s\n', ME.message);
 end
 end
-%% Subfunctions with debug messages
+%% Subfunctions with debug messages commented out
 function value = GetParameter(fid, offset, type)
     current = ftell(fid);
     fseek(fid, offset, 'bof');
     value = fread(fid, 1, type);
-    disp(['GetParameter(', type, ') at offset ', num2str(offset), ': ', num2str(value)]);
+    % disp(['GetParameter(', type, ') at offset ', num2str(offset), ': ', num2str(value)]);
     fseek(fid, current, 'bof');
 end
 function value = GetParameterStr(fid, offset)
@@ -109,6 +112,6 @@ function value = GetParameterStr(fid, offset)
     value = fread(fid, length, 'int16')';
     value(value < 0) = 256 + value(value < 0);
     value = char(value);
-    disp(['String parameter at offset ', num2str(offset), ': ', value]);
+    % disp(['String parameter at offset ', num2str(offset), ': ', value]);
     fseek(fid, current, 'bof');
 end
