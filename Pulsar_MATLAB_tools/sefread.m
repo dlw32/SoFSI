@@ -83,7 +83,6 @@ try % For error handling
                     matrix = fread(fid_veh, [channels samples], 'float')';
                     disp('Data read successfully.');
                     disp('...');
-                    disp('Complete.')
                     read_error = 0;
                 else
                     error('Channels or samples not defined before reading matrix.');
