@@ -52,7 +52,8 @@ for r = 1:length(FNin)
                 disp(['Dialog closed - skip overwriting ' FN '.mat'])
         end
         else
-            save(fullfile(output_dir, filesep, FN),'output')
+            eval([FN ' = output;']);
+            save(fullfile(output_dir, filesep, FN), FN);
      end
 
     cd(output_dir)
