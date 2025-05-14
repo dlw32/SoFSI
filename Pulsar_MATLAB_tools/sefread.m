@@ -72,6 +72,8 @@ try % For error handling
                             case 501
                                 units{i} = char(GetParameterStr(fid_veh, Chandatablock(2)));
                                 % disp(['Channel ', num2str(i), ' Unit: ', units{i}]);
+                            case(502)
+                                ScaleArry(i,1) = GetParameter (fid_veh, Chandatablock(2),'float');
                         end
                     end
                     channelptr = channelptr + 8;
