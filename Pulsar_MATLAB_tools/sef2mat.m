@@ -7,7 +7,7 @@ function sef2mat
 [FNin,PN,~] = uigetfile({'*.sef','Files to covert (*.sef)'},'Select .sef files for conversion','MultiSelect','on');
 
 % Action if user closes gui
-    if FNin==0
+    if isequal(FNin, 0)
         disp('User requested to close file selection dialogue.') 
         disp(' ')
         return
