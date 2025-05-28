@@ -34,3 +34,8 @@ octave-workspace
 # sef extension
 *.sef
 *.ezf
+
+## Other files
+*.csv
+*.xls
+*.xlsx
