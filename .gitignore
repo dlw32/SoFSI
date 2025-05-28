@@ -33,3 +33,4 @@ octave-workspace
 ## Servotest Pulsar files
 # sef extension
 *.sef
+*.ezf
