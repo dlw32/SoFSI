@@ -124,7 +124,7 @@ function batch_process_ezf()
         new_content = strrep(new_content, orig_identifier, identifier);
         
         % Create output filename
-        output_filename = sprintf('%s.sef', identifier);
+        output_filename = sprintf('%s.ezf', identifier);
         
         % Write new .ezf file
         fid = fopen(output_filename, 'w');
