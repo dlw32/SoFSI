@@ -122,6 +122,7 @@ function batch_process_ezf()
         
         % Replace identifier pattern
         new_content = strrep(new_content, orig_identifier, identifier);
+        new_content = strrep(new_content, "!!FILENAME!!", identifier);
         
         % Create output filename
         output_filename = sprintf('%s.ezf', identifier);
