@@ -1,0 +1,13 @@
+Navigate to:
+C:\Program Files (x86)\Servotest\Pulsar\Pulsar.exe.Config
+
+Under:
+<system.diagnositics>
+  <switches>
+    ...
+
+Edit the following line as needed
+<add name="HsmsBound" value="1" />
+
+1 = True
+0 = False
