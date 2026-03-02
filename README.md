@@ -16,3 +16,5 @@ This repository is for storage and documentation of scripts relating to the lab,
 - `convert2sef.m` is a batch tool for converting `*.csv` or `*.txt` using `sefwrite`
   
 - `batch_process_ezf` automates the process of generating EZF files from a csv list of drive files
+
+`/Pulsar_config` Contains info on customising the Pulsar configuration and database settings
