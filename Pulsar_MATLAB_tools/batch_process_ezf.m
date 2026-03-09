@@ -2,7 +2,8 @@
 % Batch process function to automate setup of EZFlows for use in Pulsar
 %
 % Prerequisites (selected by GUI):
-%         - a template .ezf file
+%         - a template .ezf file using '!!FILENAME!!' as a placeholder within 
+%               elements where the drive file name is needed
 %         - a .csv file listing the full file paths of drive files in the
 %               format 'fullFilePath\...\Drive_filename.sef'
 % 
