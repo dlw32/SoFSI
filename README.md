@@ -12,7 +12,7 @@ This repository is for storage and documentation of scripts relating to the lab,
 │   ├── sef2mat.m             # batch process *.sef files using sefread and return structured arrays in a *.mat file
 │   ├── sefwrite.m            # creates a *.sef files from MATLAB variables for import to Pulsar
 │   ├── convert2sef.m         # batch tool for converting *.csv or *.txt using sefwrite
-│   └── batch_process_ezf     # automates the process of generating EZF files from a csv list of drive files
+│   ├── batch_process_ezf     # automates the process of generating EZF files from a csv list of drive files
 │   └── pulsar-plot.m         # plots Pulsar log data from exported *.mat file
 └── Pulsar_config/          # Contains info on customising the Pulsar configuration and database settings
 
