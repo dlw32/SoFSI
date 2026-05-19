@@ -10,8 +10,8 @@ These functions are useful for converting time histories into `*.sef` format for
 
 <summary>sefwrite.m</summary>
 
-### sefwrite.m
-`sefwrite.m` is a function used for converting a `*.txt` or `*.csv` file into `*.sef` binary format.
+### [sefwrite.m](Pulsar_MATLAB_tools\sefwrite.m)
+Converts data from a `*.txt` or `*.csv` file into `*.sef` binary format. The input file should contain data in columns.
 
 The output is `filename.sef` in MATLAB's current working directory.
 
@@ -40,9 +40,9 @@ sefwrite(filename, loggingrate, names, scales, units, matrix, comments)
 
 <summary>convert2sef.m</summary>
 
-### convert2sef.m
+### [convert2sef.m](Pulsar_MATLAB_tools\convert2sef.m)
 
-`convert2sef.m` is a tool for converting multiple input files to `*.sef` at once for use as drive files in Pulsar's ICS. The function attempts to remove any header lines in the files before resampling the data to 512 Hz and adding a 3 second tail before and after.
+Converts data from multiple input files to `*.sef` for use as drive files in Pulsar's ICS. The function attempts to remove any header lines in the files before resampling the data to 512 Hz and adding a 3 second tail before and after.
 
 The output is a batch of files named `filename_target.sef` in the same folder as the input files.
 
@@ -71,9 +71,9 @@ Pulsar log files (`*.sef` format) can be exported individually by opening the fi
 
 <summary>sefread.m</summary>
 
-### sefread.m
+### [sefread.m](Pulsar_MATLAB_tools\sefread.m)
 
-`sefread.m` extracts data from individual `*.sef` binary files and outputs the following variables to MATLAB:
+Extracts data from individual `*.sef` binary files and outputs the following variables to MATLAB:
 
 | Variable      | Description                       |
 |---------------|-----------------------------------|
@@ -81,7 +81,7 @@ Pulsar log files (`*.sef` format) can be exported individually by opening the fi
 | `names`       | Character array of channel names  |
 | `units`       | Character array of channel units  |
 | `comments`    | File comments                     |
-| `matrix`      | Data                              |
+| `matrix`      | Data - one channel per column     |
 | `ScaleArry`   | Channel scales                    |
 | `read_error`  | 1 = error, 0 = file read okay     |
 
@@ -101,11 +101,9 @@ Output variable names can be defined by passing names to the function when calli
 
 <summary>sef2mat.m</summary>
 
-### sef2mat.m
+### [sef2mat.m](Pulsar_MATLAB_tools\sef2mat.m)
 
-`sef2mat.m` converts multiple `*.sef` binary files to `*.mat` format.
-
-A user interface will appear for selection of the input file(s) and output directory.
+Converts multiple `*.sef` binary files to `*.mat` format.
 
 The output is a batch of files named `filename.mat` each with a _struct_ variable containing the following:
 
@@ -135,8 +133,7 @@ The output is a batch of files named `filename.mat` each with a _struct_ variabl
 
 #### Usage
 
-Run `sef2mat` and select the input file(s) and destination folder.
-
+Run `sef2mat` and select the input file(s) and destination folder in the GUI.
 
 </details>
 
@@ -148,9 +145,12 @@ Functions for plotting data from Pulsar
 
 <summary>pulsar_plot.m</summary>
 
-### pulsar_plot.m
+### [pulsar_plot.m](Pulsar_MATLAB_tools\pulsar_plot.m)
 
 Requests user selection of `*.mat` file, then offers choice of plotting all channels or selecting one channel to display. Plotting all channels gives a tiled layout similar to that displayed by Pulsar.
+
+![Matlab figure window showing a tiled layout of plots](/assets/images/pulsar_plot_output.png)
+_Example pulsar_plot output_
 
 </details>
 
@@ -158,9 +158,9 @@ Requests user selection of `*.mat` file, then offers choice of plotting all chan
 
 <details>
 
-<summary>batch_process_ezf</summary>
+<summary>batch_process_ezf.m</summary>
 
-### batch_process_ezf
+### [batch_process_ezf.m](Pulsar_MATLAB_tools\batch_process_ezf.m)
 
 A function to automate setup of EZFlows for use in Pulsar. The function uses a template `*.ezf` to extract the template filename and filepath, then replaces this with the filenames and filepaths in the list provide. File selection by GUI.
 
