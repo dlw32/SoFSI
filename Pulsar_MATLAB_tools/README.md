@@ -162,12 +162,12 @@ _Example pulsar_plot output_
 
 ### [batch_process_ezf.m](batch_process_ezf.m)
 
-A function to automate setup of EZFlows for use in Pulsar. The function uses a template `*.ezf` to extract the template filename and filepath, then replaces this with the filenames and filepaths in the list provide. File selection by GUI.
+A function to automate setup of EZFlows for use in Pulsar. The function uses a template `*.ezf` to extract the template filename and filepath, then replaces this with the filenames and filepaths in the list provided. File selection by GUI.
 
 The output is a batch of `*.ezf` files with filenames derived from the input list in MATLAB's current working directory.
 
 #### Prerequisites
-- A template `*.ezf` file using `!!FILENAME!!'` as a placeholder within elements where the drive file name is needed
+- A template `*.ezf` file using `!!FILENAME!!` as a placeholder within elements where the drive file name is needed
 - A `*.csv` or `*.txt` file listing the full file paths of drive files in the format `fullFilePath\...\Drive_filename.sef`
 
 #### Usage
