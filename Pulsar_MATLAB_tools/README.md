@@ -10,7 +10,7 @@ These functions are useful for converting time histories into `*.sef` format for
 
 <summary>sefwrite.m</summary>
 
-### [sefwrite.m](Pulsar_MATLAB_tools\sefwrite.m)
+### [sefwrite.m](sefwrite.m)
 Converts data from a `*.txt` or `*.csv` file into `*.sef` binary format. The input file should contain data in columns.
 
 The output is `filename.sef` in MATLAB's current working directory.
@@ -40,7 +40,7 @@ sefwrite(filename, loggingrate, names, scales, units, matrix, comments)
 
 <summary>convert2sef.m</summary>
 
-### [convert2sef.m](Pulsar_MATLAB_tools\convert2sef.m)
+### [convert2sef.m](convert2sef.m)
 
 Converts data from multiple input files to `*.sef` for use as drive files in Pulsar's ICS. The function attempts to remove any header lines in the files before resampling the data to 512 Hz and adding a 3 second tail before and after.
 
@@ -71,7 +71,7 @@ Pulsar log files (`*.sef` format) can be exported individually by opening the fi
 
 <summary>sefread.m</summary>
 
-### [sefread.m](Pulsar_MATLAB_tools\sefread.m)
+### [sefread.m](sefread.m)
 
 Extracts data from individual `*.sef` binary files and outputs the following variables to MATLAB:
 
@@ -101,7 +101,7 @@ Output variable names can be defined by passing names to the function when calli
 
 <summary>sef2mat.m</summary>
 
-### [sef2mat.m](Pulsar_MATLAB_tools\sef2mat.m)
+### [sef2mat.m](sef2mat.m)
 
 Converts multiple `*.sef` binary files to `*.mat` format.
 
@@ -145,7 +145,7 @@ Functions for plotting data from Pulsar
 
 <summary>pulsar_plot.m</summary>
 
-### [pulsar_plot.m](Pulsar_MATLAB_tools\pulsar_plot.m)
+### [pulsar_plot.m](pulsar_plot.m)
 
 Requests user selection of `*.mat` file, then offers choice of plotting all channels or selecting one channel to display. Plotting all channels gives a tiled layout similar to that displayed by Pulsar.
 
@@ -160,7 +160,7 @@ _Example pulsar_plot output_
 
 <summary>batch_process_ezf.m</summary>
 
-### [batch_process_ezf.m](Pulsar_MATLAB_tools\batch_process_ezf.m)
+### [batch_process_ezf.m](batch_process_ezf.m)
 
 A function to automate setup of EZFlows for use in Pulsar. The function uses a template `*.ezf` to extract the template filename and filepath, then replaces this with the filenames and filepaths in the list provide. File selection by GUI.
 
