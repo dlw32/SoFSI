@@ -27,13 +27,15 @@ function batch_process_ezf()
     end
     template_ezf = fullfile(ezf_path, ezf_file);
     
-    % GUI file selection for CSV file
-    [csv_file, csv_path] = uigetfile('*.csv', 'Select CSV file with input names');
-    if isequal(csv_file, 0)
-        fprintf('No CSV file selected. Exiting.\n');
+    % GUI file selection for CSV or TXT file
+    [list_file, list_path] = uigetfile( ...
+        {'*.csv;*.txt','CSV or TXT file'; '*.csv','CSV file (*.csv)'; '*.txt','Text file (*.txt)'}, ...
+        'Select CSV or TXT file with input names');
+    if isequal(list_file, 0)
+        fprintf('No file selected. Exiting.\n');
         return;
     end
-    csv_file = fullfile(csv_path, csv_file);
+    list_fullfile = fullfile(list_path, list_file);
     
     %% Read the template .ezf file
     fprintf('Reading template file: %s\n', template_ezf);
@@ -57,12 +59,29 @@ function batch_process_ezf()
     template_content = strjoin(template_lines, newline);
     fclose(fid);
     
-    %% Read CSV file containing input names
-    fprintf('Reading CSV file: %s\n', csv_file);
-    % Read drive file paths
-    input_names = readcell(csv_file, 'Delimiter', ',');
+    %% Read CSV or TXT file containing input names
+    fprintf('Reading file: %s\n', list_fullfile);
+    [~, ~, ext] = fileparts(list_fullfile);
+    ext = lower(ext);
+    switch ext
+        case '.csv'
+            % Read drive file paths from CSV (comma-delimited)
+            input_names = readcell(list_fullfile, 'Delimiter', ',');
+            % readcell may return a column of char vectors or strings; convert to cellstr
+            input_names = cellfun(@(c) char(c), input_names, 'UniformOutput', false);
+        case '.txt'
+            % Read as lines and remove empty lines / whitespace
+            lines = readlines(list_fullfile);
+            % Convert to cell array of char and trim whitespace
+            lines = strtrim(cellstr(lines));
+            % Remove empty lines
+            input_names = lines(~cellfun(@isempty, lines));
+        otherwise
+            error('Unsupported file extension: %s. Use .csv or .txt', ext);
+    end
+
     if isempty(input_names)
-        error('No input names found in CSV file');
+        error('No input names found in file');
     end
     fprintf('Found %d input files to process\n', length(input_names));
    
@@ -99,14 +118,19 @@ function batch_process_ezf()
     % Extract identifier from original drive file
     drive_pattern = '.*Drive_(.+?)\.sef';
     orig_tokens = regexp(original_drive_file, drive_pattern, 'tokens');
-    orig_identifier = orig_tokens{1}{1};
+    if isempty(orig_tokens) || isempty(orig_tokens{1})
+        orig_identifier = '';
+        warning('Could not extract original identifier from template drive file.');
+    else
+        orig_identifier = orig_tokens{1}{1};
+    end
 
     %% Process new EZF files
 
     % Process each input name
     for i = 1:length(input_names)
         current_input = input_names{i};
-        % Extract identifier from CSV path (text between '\Drive_' and '.sef')
+        % Extract identifier from CSV/TXT path (text between '\Drive_' and '.sef')
         tokens = regexp(current_input, drive_pattern, 'tokens');
         if isempty(tokens)
             warning('Cannot extract identifier from: %s', current_input);
@@ -118,11 +142,20 @@ function batch_process_ezf()
         % Start with ezf template content
         new_content = template_content;
         
-        % Replace drive file path
-        new_content = strrep(new_content, append(drive_file_dir, original_drive_file), current_input);
+        % Replace drive file path if original_drive_file and drive_file_dir are present
+        if ~isempty(drive_file_dir) && ~isempty(original_drive_file)
+            new_content = strrep(new_content, [drive_file_dir original_drive_file], current_input);
+        else
+            % Fallback: try replacing just the original identifier if available
+            if ~isempty(orig_identifier)
+                new_content = strrep(new_content, orig_identifier, identifier);
+            end
+        end
         
-        % Replace identifier pattern
-        new_content = strrep(new_content, orig_identifier, identifier);
+        % Replace identifier pattern and filename placeholder
+        if ~isempty(orig_identifier)
+            new_content = strrep(new_content, orig_identifier, identifier);
+        end
         new_content = strrep(new_content, "!!FILENAME!!", identifier);
         
         % Create output filename

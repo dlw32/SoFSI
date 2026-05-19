@@ -14,18 +14,18 @@ function convert2sef(varargin)
 
     % Create input parser
     p = inputParser;
-    
+
     % Add optional parameters with validation
     addParameter(p, 'NumChannels', [], @(x) isnumeric(x) && ~isnan(x));
     addParameter(p, 'InputRate', [], @(x) isnumeric(x) && ~isnan(x));
-       
+
     % Parse inputs
     parse(p, varargin{:});
-    
+
     % Get parsed inputs
     num_channels = p.Results.NumChannels;
     inputrate = p.Results.InputRate;
-    
+
     % Prompt if not provided
     if isempty(inputrate)
         inputrate = input('Enter the sample rate of the input data: ');
@@ -42,7 +42,7 @@ function convert2sef(varargin)
     % Default output sample rate is 512 - modify this if needed.
     loggingrate = 512;
     % A default 3 second tail is added before and after data.
-    tailsecs = 3; 
+    tailsecs = 3;
 
     % Dynamic channel configuration
     names = cell(1, num_channels);
@@ -59,7 +59,7 @@ function convert2sef(varargin)
         units{i} = input(['Enter units for channel ' num2str(i) ': '], 's');
     end
 
-    % Convert to character array for WriteFile compatibility
+    % Convert to character array for sefwrite.m compatibility
     names = char(names);
     units = char(units);
 
@@ -83,7 +83,7 @@ function convert2sef(varargin)
 %% Generate .sef file for each selected file
     for r = 1:length(FNsave)
         FN = FNsave{r};
-        
+
         % Remove file extension from filename
         FNd = double(FN);
         FNnoext = char(FNd(1:max(find(FNd==46)-1)));
@@ -92,13 +92,13 @@ function convert2sef(varargin)
         % Read the file and detect header lines
         fid = fopen(FNsave{r}, 'r');
         header_lines = 0;
-        
+
         % Attempt to detect header lines by trying to convert first line to numbers
         while ~feof(fid)
             line = fgetl(fid);
             try
                 test_data = str2num(line); %#ok<ST2NM>
-                
+
                 if isempty(test_data)
                     header_lines = header_lines + 1;
                 else
@@ -108,15 +108,15 @@ function convert2sef(varargin)
                 header_lines = header_lines + 1;
             end
         end
-        
+
         % Reset file pointer to beginning
         fseek(fid, 0, 'bof');
-        
+
         % Skip header lines
         for i = 1:header_lines
             fgetl(fid);
         end
-        
+
         % Read data, skipping previously identified header lines
         data = readmatrix(FN, 'NumHeaderLines', header_lines);
         fclose(fid);
@@ -130,7 +130,7 @@ function convert2sef(varargin)
 
         % Create full path for output file in the same directory as input file
         filename = fullfile([FNnoext '_target.sef']);
-        
+
         % Write file
         sefwrite(filename, loggingrate, names, scales, units, matrix, comments);
     end

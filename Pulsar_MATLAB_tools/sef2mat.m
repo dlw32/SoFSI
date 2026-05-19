@@ -2,13 +2,13 @@
 % Allows for selection of multiple files for batch conversion.
 
 function sef2mat
-        
+
 %% Select files for conversion
 [FNin,PN,~] = uigetfile({'*.sef','Files to covert (*.sef)'},'Select .sef files for conversion','MultiSelect','on');
 
 % Action if user closes gui
     if isequal(FNin, 0)
-        disp('User requested to close file selection dialogue.') 
+        disp('User requested to close file selection dialogue.')
         disp(' ')
         return
     end
@@ -37,7 +37,7 @@ for r = 1:length(FNin)
     [loggingrate,names,units,comments,matrix,scales,read_error] = sefread(FNin{r});
 
     output = struct('sefFileInfo',FInfo,'comments', comments,'loggingrate',loggingrate,'matrix',matrix,'names',char(names),'read_error',read_error,'scales',scales,'units',char(units));
-    
+
     disp(['Writing MAT file : ' output_dir filesep FN '.mat'])
 
     % Export converted data as .mat file

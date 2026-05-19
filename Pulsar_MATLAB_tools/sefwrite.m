@@ -81,7 +81,7 @@ thispos = thispos+16+(16 * channels); % integer followed by list of channel poin
 i=i+1;
 
 % Data
-% we need to remeber where we are so that we can write the correct offset
+% we need to remember where we are so that we can write the correct offset
 datahoffset = (i-1)*16 + 56;
 header(i,1)=103;
 header(i,2)=0;

@@ -25,7 +25,13 @@ disp(['Loaded ', FN])
 % Pulsar outputs .mat structure file. When loading, the result (s) is a
 % structure within a structure. The next step removes the unnecessary layer
 % of structure
-s = s.(FN);
+if isfield(s, FN)           % structure is named as the filename if exported using sef2mat
+    s = s.(FN);
+elseif isfield(s, 'output') % default variable name if exported from Pulsar
+    s = s.output;
+else
+    error('Could not find expected field ''%s'' or ''output'' in loaded file.', FN);
+end
 
 tt = timetable(s.matrix,'SampleRate',s.loggingrate);    % creates a timetable with the data
 tt = splitvars(tt);                                     % splits the data into individual variables
@@ -46,7 +52,7 @@ if plotChoice == 2
     numChans = width(tt);
     % Display channel list, removing trailing whitespace
     for k = 1:numChans
-        fprintf('  %d. %s\n', k, strtrim(s.names(k,:)));
+        fprintf('  %d. %s\n', k, deblank(s.names(k,:)));
     end
     disp(' ')
     % User selection of channel
@@ -74,17 +80,17 @@ if plotChoice == 1
     for k = 1:numChans % sets number of loop cycles
         nexttile % moves to next tile
         plot(tt.Time,(tt.(k)* s.scales(k))) % plots variable against time
-        title(s.names(k,:), 'Interpreter', 'none') % extracts the variable name and applies it to the current plot
-        ylabel(s.units(k, :), 'Interpreter', 'none')
+        title(deblank(s.names(k,:)), 'Interpreter', 'none') % extracts the variable name and applies it to the current plot
+        ylabel(deblank(s.units(k, :)), 'Interpreter', 'none')
     end
     title(t, ['Pulsar output: ', FN ' @ ' num2str(tt.Properties.SampleRate) 'Hz'], 'Interpreter', 'none')
     
 % Plot single channel
 elseif plotChoice == 2
     plot(tt.Time,(tt.(chanSel) * s.scales(chanSel)))
-    title(s.names(chanSel,:), 'Interpreter', 'none')
-    ylabel(s.units(chanSel,:), 'Interpreter', 'none')
-    title({['Pulsar output: ', FN ' @ ' num2str(tt.Properties.SampleRate) 'Hz']; s.names(chanSel,:)}, 'Interpreter', 'none')
+    title(deblank(s.names(chanSel,:)), 'Interpreter', 'none')
+    ylabel(deblank(s.units(chanSel,:)), 'Interpreter', 'none')
+    title({['Pulsar output: ', FN ' @ ' num2str(tt.Properties.SampleRate) 'Hz']; deblank(s.names(chanSel,:))}, 'Interpreter', 'none')
 end
 
 disp(' ')
