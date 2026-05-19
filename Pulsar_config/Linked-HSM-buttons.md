@@ -8,14 +8,14 @@ C:\Program Files (x86)\Servotest\Pulsar\Pulsar.exe.Config
 ```
 Under:
 
-```
+```xml
   <system.diagnositics>
     <switches>
       ...
 ```
 Edit the following line as needed
-```
+```xml
   <add name="HsmsBound" value="1" />
 ```
-```1``` = True (Buttons combined)\
-```0``` = False (Separate buttons for each HSM)
+`1` = True (Buttons combined)\
+`0` = False (Separate buttons for each HSM)
